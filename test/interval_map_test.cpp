@@ -14,17 +14,23 @@ namespace {
 constexpr uint8_t MIN = std::numeric_limits<uint8_t>::lowest();
 constexpr uint8_t MAX = std::numeric_limits<uint8_t>::max();
 
+class IntervalMapTest : public testing::Test {
+ protected:
+  IntervalMapTest()
+      // Whole interval of 'a's.
+      : intervals_{'a'} {}
+
+  interval_map<uint8_t, char> intervals_;
+};
+
 }  // namespace
 
-TEST(IntervalMapTest, InsertAnotherIntoStart) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, InsertAnotherIntoStart) {
   // [0, 100):'b', [100, 255]: 'a'.
-  intervals.insert(MIN, 100, 'b');
+  intervals_.insert(MIN, 100, 'b');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 2);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 2);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'b');
   ++it;
@@ -32,15 +38,12 @@ TEST(IntervalMapTest, InsertAnotherIntoStart) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, InsertAnotherIntoEnd) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, InsertAnotherIntoEnd) {
   // [0, 100):'a', [100, 255): 'b', [255, 255]: 'a'.
-  intervals.insert(100, MAX, 'b');
+  intervals_.insert(100, MAX, 'b');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 3);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 3);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'a');
   ++it;
@@ -51,44 +54,35 @@ TEST(IntervalMapTest, InsertAnotherIntoEnd) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, InsertSameIntoStartNothingChanges) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, InsertSameIntoStartNothingChanges) {
   // [0, 255]: 'a'.
-  intervals.insert(MIN, 100, 'a');
+  intervals_.insert(MIN, 100, 'a');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 1);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 1);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, InsertSameIntoEndNothingChanges) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, InsertSameIntoEndNothingChanges) {
   // [0, 255]: 'a'.
-  intervals.insert(100, MAX, 'a');
+  intervals_.insert(100, MAX, 'a');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 1);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 1);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, IdealReplaceInStart) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, IdealReplaceInStart) {
   // [0, 100):'b', [100, 255]: 'a'.
-  intervals.insert(MIN, 100, 'b');
+  intervals_.insert(MIN, 100, 'b');
 
   // [0, 100):'c', [100, 255]: 'a'.
-  intervals.insert(MIN, 100, 'c');
+  intervals_.insert(MIN, 100, 'c');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 2);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 2);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'c');
   ++it;
@@ -96,18 +90,15 @@ TEST(IntervalMapTest, IdealReplaceInStart) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, IdealReplaceInEnd) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, IdealReplaceInEnd) {
   // [0, 100):'b', [100, 255]: 'a'.
-  intervals.insert(100, MAX, 'b');
+  intervals_.insert(100, MAX, 'b');
 
   // [0, 100):'a', [100, 255]: 'c', [255, 255]: 'a'..
-  intervals.insert(100, MAX, 'c');
+  intervals_.insert(100, MAX, 'c');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 3);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 3);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'a');
   ++it;
@@ -118,18 +109,15 @@ TEST(IntervalMapTest, IdealReplaceInEnd) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, ExtendAtStart) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, ExtendAtStart) {
   // [0, 100):'b', [100, 255]: 'a'.
-  intervals.insert(MIN, 100, 'b');
+  intervals_.insert(MIN, 100, 'b');
 
   // [0, 200):'b', [200, 255]: 'a'.
-  intervals.insert(MIN, 200, 'b');
+  intervals_.insert(MIN, 200, 'b');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 2);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 2);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'b');
   ++it;
@@ -137,18 +125,15 @@ TEST(IntervalMapTest, ExtendAtStart) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, ExtendAtEnd) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, ExtendAtEnd) {
   // [0, 100):'a', [100, 255): 'b', [255, 255]: 'a'.
-  intervals.insert(100, MAX, 'b');
+  intervals_.insert(100, MAX, 'b');
 
   // [0, 50):'a', [50, 255): 'b', [255, 255]: 'a'.
-  intervals.insert(50, MAX, 'b');
+  intervals_.insert(50, MAX, 'b');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 3);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 3);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'a');
   ++it;
@@ -159,18 +144,15 @@ TEST(IntervalMapTest, ExtendAtEnd) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, ExtendInTheMiddleToLeft) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, ExtendInTheMiddleToLeft) {
   // [0, 100): 'a', [100, 200):'b', [200, 255]: 'a'.
-  intervals.insert(100, 200, 'b');
+  intervals_.insert(100, 200, 'b');
 
   // [0, 50): 'a', [50, 200):'b', [200, 255]: 'a'.
-  intervals.insert(50, 200, 'b');
+  intervals_.insert(50, 200, 'b');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 3);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 3);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'a');
   ++it;
@@ -181,18 +163,15 @@ TEST(IntervalMapTest, ExtendInTheMiddleToLeft) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, ExtendInTheMiddleToRight) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, ExtendInTheMiddleToRight) {
   // [0, 100): 'a', [100, 200):'b', [200, 255]: 'a'.
-  intervals.insert(100, 200, 'b');
+  intervals_.insert(100, 200, 'b');
 
   // [0, 100): 'a', [100, 250):'b', [250, 255]: 'a'.
-  intervals.insert(100, 250, 'b');
+  intervals_.insert(100, 250, 'b');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 3);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 3);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'a');
   ++it;
@@ -203,18 +182,15 @@ TEST(IntervalMapTest, ExtendInTheMiddleToRight) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, ExtendInTheMiddleBothSides) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, ExtendInTheMiddleBothSides) {
   // [0, 100): 'a', [100, 200):'b', [200, 255]: 'a'.
-  intervals.insert(100, 200, 'b');
+  intervals_.insert(100, 200, 'b');
 
   // [0, 50): 'a', [50, 250):'b', [250, 255]: 'a'.
-  intervals.insert(50, 250, 'b');
+  intervals_.insert(50, 250, 'b');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 3);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 3);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'a');
   ++it;
@@ -225,21 +201,18 @@ TEST(IntervalMapTest, ExtendInTheMiddleBothSides) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, OverlapStartToMiddle) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, OverlapStartToMiddle) {
   // [0, 100): 'b', [100, 255]: 'a'.
-  intervals.insert(MIN, 100, 'b');
+  intervals_.insert(MIN, 100, 'b');
 
   // [0, 100): 'b', [100, 200):'c', [200, 255]: 'a'.
-  intervals.insert(100, 200, 'c');
+  intervals_.insert(100, 200, 'c');
 
   // [0, 150): 'd', [150, 200):'c', [200, 255]: 'a'.
-  intervals.insert(MIN, 150, 'd');
+  intervals_.insert(MIN, 150, 'd');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 3);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 3);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'd');
   ++it;
@@ -250,21 +223,18 @@ TEST(IntervalMapTest, OverlapStartToMiddle) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, OverlapMiddleToEnd) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, OverlapMiddleToEnd) {
   // [0, 100): 'b', [100, 255]: 'a'.
-  intervals.insert(MIN, 100, 'b');
+  intervals_.insert(MIN, 100, 'b');
 
   // [0, 100): 'b', [100, 200):'c', [200, 255]: 'a'.
-  intervals.insert(100, 200, 'c');
+  intervals_.insert(100, 200, 'c');
 
   // [0, 50): 'b', [50, 200):'d', [200, 255]: 'a'.
-  intervals.insert(50, 200, 'd');
+  intervals_.insert(50, 200, 'd');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 3);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 3);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'b');
   ++it;
@@ -275,21 +245,18 @@ TEST(IntervalMapTest, OverlapMiddleToEnd) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, OverlapMiddleToMiddle) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, OverlapMiddleToMiddle) {
   // [0, 100): 'b', [100, 255]: 'a'.
-  intervals.insert(MIN, 100, 'b');
+  intervals_.insert(MIN, 100, 'b');
 
   // [0, 100): 'b', [100, 200):'c', [200, 255]: 'a'.
-  intervals.insert(100, 200, 'c');
+  intervals_.insert(100, 200, 'c');
 
   // [0, 50): 'b', [50, 150): 'd', [150, 200):'c', [200, 255]: 'a'.
-  intervals.insert(50, 150, 'd');
+  intervals_.insert(50, 150, 'd');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 4);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 4);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'b');
   ++it;
@@ -303,21 +270,18 @@ TEST(IntervalMapTest, OverlapMiddleToMiddle) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, OverlapMiddleToMiddleEatingInterval) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, OverlapMiddleToMiddleEatingInterval) {
   // [0, 100): 'b', [100, 255]: 'a'.
-  intervals.insert(MIN, 100, 'b');
+  intervals_.insert(MIN, 100, 'b');
 
   // [0, 100): 'b', [100, 200):'c', [200, 255]: 'a'.
-  intervals.insert(100, 200, 'c');
+  intervals_.insert(100, 200, 'c');
 
   // [0, 50): 'b', [50, 220): 'd', [220, 255]: 'a'.
-  intervals.insert(50, 220, 'd');
+  intervals_.insert(50, 220, 'd');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 3);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 3);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'b');
   ++it;
@@ -328,34 +292,28 @@ TEST(IntervalMapTest, OverlapMiddleToMiddleEatingInterval) {
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, ConcatenateIntervalsAtStart) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, ConcatenateIntervalsAtStart) {
   // [0, 100): 'b', [100, 255]: 'a'.
-  intervals.insert(MIN, 100, 'b');
+  intervals_.insert(MIN, 100, 'b');
 
   // [0, 255): 'a'.
-  intervals.insert(MIN, 100, 'a');
+  intervals_.insert(MIN, 100, 'a');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 1);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 1);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'a');
 }
 
-TEST(IntervalMapTest, ConcatenateIntervalsInTheMiddle) {
-  // Whole interval of 'a's.
-  interval_map<uint8_t, char> intervals{'a'};
-
+TEST_F(IntervalMapTest, ConcatenateIntervalsInTheMiddle) {
   // [0, 100): 'a', [100, 200): 'b', [200, 255]: 'a'.
-  intervals.insert(100, 200, 'b');
+  intervals_.insert(100, 200, 'b');
 
   // [0, 255): 'a'.
-  intervals.insert(100, 200, 'a');
+  intervals_.insert(100, 200, 'a');
 
-  ASSERT_EQ(intervals.get_intervals().size(), 1);
-  auto it = intervals.get_intervals().begin();
+  ASSERT_EQ(intervals_.get_intervals().size(), 1);
+  auto it = intervals_.get_intervals().begin();
   ASSERT_EQ(it->first, MIN);
   ASSERT_EQ(it->second, 'a');
 }
